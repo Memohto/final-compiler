@@ -1,4 +1,3 @@
-from ast import keyword
 import sys
 sys.path.insert(0, "../..")
 
@@ -173,13 +172,15 @@ def p_error(p):
 import ply.yacc as yacc
 parser = yacc.yacc()
 
-f = open("input.txt", "r")
+if len(sys.argv) == 2:
+  try: 
+    f = open(sys.argv[1], "r")
 
-tree = yacc.parse(f.read())
-# print(tree.token + ': ' + str(tree.val))
-# print(tree.children[0].token + ': ' + str(tree.children[0].val))
-# print(tree.children[0].children[1].token + ': ' + str(tree.children[0].children[1].val))
-print(tree)
+    tree = yacc.parse(f.read())
+    print(tree)
 
-f.close()
-  
+    f.close()
+  except:
+    print('Could not open '+sys.argv[1])
+else:
+  print('Missing arguments (./gtc.py input_path.txt)')
