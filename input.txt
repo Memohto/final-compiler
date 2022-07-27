@@ -1,3 +1,4 @@
+int da;
 boolean a = true;
 int b = 1;
 float c = 1.1;
@@ -8,3 +9,4 @@ if ( 1 == 0 ) {
   }
 }
 float e = b * (c + 1);
+boolean f = b >= e;

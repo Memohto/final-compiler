@@ -84,6 +84,7 @@ def p_declaration(p):
   '''declaration : FLOAT NAME
                  | INT NAME
                  | BOOLEAN NAME'''
+  names[p[2]] = p[1]
   dcl_type = ''
   if p[1] == 'float':
     dcl_type = 'floatdcl'
@@ -97,9 +98,19 @@ def p_declaration_assign(p):
   '''declaration : FLOAT NAME "=" number_expression
                  | INT NAME "=" number_expression
                  | BOOLEAN NAME "=" boolean_expression'''
-  parent = Node("=")
-  parent.children.append(Node('id', p[2]))
-  parent.children.append(p[4])
+  names[p[2]] = p[1]
+  dcl_type = ''
+  if p[1] == 'float':
+    dcl_type = 'floatdcl'
+  elif p[1] == 'int':
+    dcl_type = 'intdcl'
+  elif p[1] == 'boolean':
+    dcl_type = 'booldcl'
+  parent = Node(dcl_type)
+  assign_node = Node("=")
+  assign_node.children.append(Node('id', p[2]))
+  assign_node.children.append(p[4])
+  parent.children = [assign_node]
   p[0] = [parent]
 
 def p_statements(p):
@@ -186,7 +197,7 @@ def p_boolean_value(p):
                    | FALSE'''
   type = ''
   if p[1] in ['true', 'false']:
-    type = 'bool'
+    type = 'boolean'
   else:
     type = 'id'
   p[0] = Node(type, p[1])
@@ -208,10 +219,7 @@ def p_error(p):
     print("Syntax error at '%s'" % p.value)
   else:
     print("Syntax error at EOF")
-
-# Semantic analysis
-def type_check(root):
-  print(root)
+  exit()
 
 # Build the yacc
 import ply.yacc as yacc
@@ -221,8 +229,10 @@ if len(sys.argv) == 2:
   f = open(sys.argv[1], "r")
 
   tree = yacc.parse(f.read())
-  # print(tree)
-  type_check(tree)
+  print(names)
+  tree.type_check(names)
+  print(tree)
+
 
   f.close()
 else:
