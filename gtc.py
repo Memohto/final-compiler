@@ -2,14 +2,14 @@ import sys
 sys.path.insert(0, "../..")
 
 keywords = (
-  'FLOAT', 'INT', 'BOOLEAN', 'PRINT', 'AND', 'OR', 'TRUE', 'FALSE'
+  'FLOAT', 'INT', 'BOOLEAN', 'PRINT', 'AND', 'OR', 'TRUE', 'FALSE', 'IF'
 )
 
 tokens = keywords + (
-  'FNUMBER', 'INUMBER', 'NAME'
+  'FNUMBER', 'INUMBER', 'NAME', 'EQUALS', 'NOT_EQUALS', 'GREATER', 'LESS', 'GREAT_EQUALS', 'LESS_EQUALS'
 )
 
-literals = ['+', '-', '*', '/', '^', ';', '=', '(', ')']
+literals = ['+', '-', '*', '/', '^', ';', '=', '(', ')', '{', '}']
 
 # Tokens
 def t_NAME(t):
@@ -27,6 +27,13 @@ def t_INUMBER(t):
   r'\d+'
   t.value = int(t.value)
   return t
+
+t_EQUALS = r'=='
+t_NOT_EQUALS = r'!='
+t_GREATER = r'>'
+t_LESS = r'<'
+t_GREAT_EQUALS = r'>='
+t_LESS_EQUALS = r'<='
 
 t_ignore = " \t"
 
@@ -48,12 +55,22 @@ from Node import Node
 names = { }
 
 def p_program(p):
-  '''program : declarations statements
-             | '''
+  '''program : blocks'''
   root = Node("PROG")
-  if len(p) > 1:
-    root.children += p[1] + p[2]
+  root.children += p[1]
   p[0] = root
+
+def p_blocks(p):
+  '''blocks : block blocks
+            | '''
+  if len(p) > 1:
+    p[0] = p[1] + p[2]
+  else:
+    p[0] = []
+
+def p_block(p):
+  '''block : declarations statements'''
+  p[0] = p[1] + p[2]
 
 def p_declarations(p):
   '''declarations : declaration ";" declarations
@@ -86,23 +103,33 @@ def p_declaration_assign(p):
   p[0] = [parent]
 
 def p_statements(p):
-  '''statements : statement ";" statements
+  '''statements : statement statements
                 | '''
   if len(p) > 1:
-    p[0] = p[1] + p[3]
+    p[0] = p[1] + p[2]
   else:
     p[0] = []
 
+def p_statement_if(p):
+  'statement : IF "(" boolean_expression ")" "{" blocks "}"'
+  parent = Node("if")
+  parent.children.append(p[3])
+  child = Node("block")
+  child.children += p[6]
+  parent.children.append(child)
+  p[0] = [parent]
+
 def p_statement_assign(p):
-  'statement : NAME "=" number_expression'
+  '''statement : NAME "=" number_expression ";"
+               | NAME "=" boolean_expression ";"'''
   parent = Node("=")
   parent.children.append(Node('id', p[1]))
   parent.children.append(p[3])
   p[0] = [parent]
 
 def p_statement_print(p):
-  'statement : PRINT NAME'
-  p[0] = [Node('print', p[2])]
+  'statement : PRINT "(" NAME ")" ";"'
+  p[0] = [Node('print', p[3])]
 
 def p_number_expression(p):
   '''number_expression : "(" number_expression ")"
@@ -111,7 +138,9 @@ def p_number_expression(p):
                        | number_expression "*" number_expression 
                        | number_expression "/" number_expression 
                        | number_expression "^" number_expression
-                       | number_value'''
+                       | NAME
+                       | float_value
+                       | int_value'''
   if len(p) > 2:
     if p[2] in ['+', '-', '*', '/', '^']:
       parent = Node(p[2])
@@ -121,25 +150,25 @@ def p_number_expression(p):
     else:
       p[0] = p[2]
   else:
-    p[0] = p[1]
+    if type(p[1]) == str:
+      p[0] = Node("id", p[1])
+    else:
+      p[0] = p[1]
 
-def p_number_value_id(p):
-  'number_value : NAME'
-  p[0] = Node('id', p[1])
+def p_float_value(p):
+  '''float_value : FNUMBER'''
+  p[0] = Node('float', p[1])
 
-def p_number_value_float(p):
-  'number_value : FNUMBER'
-  p[0] = Node('fnum', p[1])           
-
-def p_number_value_int(p):
-  'number_value : INUMBER'
-  p[0] = Node('inum', p[1])
+def p_int_value(p):
+  '''int_value : INUMBER'''
+  p[0] = Node('int', p[1])
 
 def p_boolean_expression(p):
   '''boolean_expression : "(" boolean_expression ")"
                         | boolean_expression AND boolean_expression
                         | boolean_expression OR boolean_expression
-                        | boolean_value'''
+                        | boolean_value
+                        | comparison'''
   if len(p) > 2:
     if p[2] in ['and', 'or']:
       parent = Node(p[2])
@@ -157,30 +186,44 @@ def p_boolean_value(p):
                    | FALSE'''
   type = ''
   if p[1] in ['true', 'false']:
-    type = ''
+    type = 'bool'
   else:
     type = 'id'
   p[0] = Node(type, p[1])
 
+def p_comparison(p):
+  '''comparison : number_expression EQUALS number_expression
+                | number_expression NOT_EQUALS number_expression
+                | number_expression GREATER number_expression
+                | number_expression LESS number_expression
+                | number_expression GREAT_EQUALS number_expression
+                | number_expression LESS_EQUALS number_expression'''
+  parent = Node(p[2])
+  parent.children.append(p[1])
+  parent.children.append(p[3])
+  p[0] = parent
+                
 def p_error(p):
   if p:
     print("Syntax error at '%s'" % p.value)
   else:
     print("Syntax error at EOF")
 
+# Semantic analysis
+def type_check(root):
+  print(root)
+
 # Build the yacc
 import ply.yacc as yacc
 parser = yacc.yacc()
 
 if len(sys.argv) == 2:
-  try: 
-    f = open(sys.argv[1], "r")
+  f = open(sys.argv[1], "r")
 
-    tree = yacc.parse(f.read())
-    print(tree)
+  tree = yacc.parse(f.read())
+  # print(tree)
+  type_check(tree)
 
-    f.close()
-  except:
-    print('Could not open '+sys.argv[1])
+  f.close()
 else:
   print('Missing arguments (./gtc.py input_path.txt)')
