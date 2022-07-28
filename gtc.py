@@ -2,7 +2,7 @@ import sys
 sys.path.insert(0, "../..")
 
 keywords = (
-  'FLOAT', 'INT', 'BOOLEAN', 'PRINT', 'AND', 'OR', 'TRUE', 'FALSE', 'IF'
+  'FLOAT', 'INT', 'BOOLEAN', 'PRINT', 'AND', 'OR', 'TRUE', 'FALSE', 'IF', 'WHILE'
 )
 
 tokens = keywords + (
@@ -121,9 +121,10 @@ def p_statements(p):
   else:
     p[0] = []
 
-def p_statement_if(p):
-  'statement : IF "(" boolean_expression ")" "{" blocks "}"'
-  parent = Node("if")
+def p_statement_flow_controllers(p):
+  '''statement : IF "(" boolean_expression ")" "{" blocks "}"
+               | WHILE "(" boolean_expression ")" "{" blocks "}"'''
+  parent = Node(p[1])
   parent.children.append(p[3])
   child = Node("block")
   child.children += p[6]

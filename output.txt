@@ -8,7 +8,7 @@ c = 1.1
 booldcl d
 r1 = a and false
 d = r1
-r1 = 1 == 0
+r1 = b < 10
 if r1 goto L1
 goto L2
 L1
@@ -20,6 +20,9 @@ L3
 print a
 L4
 g = false
+r2 = b + 1
+b = r2
+if r1 goto L1
 L2
 floatdcl e
 r1 = int2float b

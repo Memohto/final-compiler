@@ -42,10 +42,23 @@ class CodeGenerator:
       if_block = self.next_block()
       continue_block = self.next_block()
       self.instructions.append('if '+ condition + ' goto ' + if_block)
-      self.instructions.append('goto '+continue_block)
+      self.instructions.append('goto ' + continue_block)
       self.instructions.append(if_block)
       for child in current.children[1].children:
         self.generate_node_code(child)
+      # self.instructions.append('goto ' + continue_block)
+      self.instructions.append(continue_block)
+    elif current.type == 'while':
+      condition = self.generate_node_code(current.children[0])
+      while_block = self.next_block()
+      continue_block = self.next_block()
+      self.instructions.append('if ' + condition + ' goto ' + while_block)
+      self.instructions.append('goto ' + continue_block)
+      self.instructions.append(while_block)
+      for child in current.children[1].children:
+        self.generate_node_code(child)
+      self.instructions.append('if ' + condition + ' goto ' + while_block)
+      # self.instructions.append('goto ' + continue_block)
       self.instructions.append(continue_block)
     return ret
 
