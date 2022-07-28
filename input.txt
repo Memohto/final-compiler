@@ -2,11 +2,14 @@ int da;
 boolean a = true;
 int b = 1;
 float c = 1.1;
+boolean d = a and false;
 if ( 1 == 0 ) {
-  boolean d = a and false;
-  if (a or d) {
+  boolean g = true;
+  if (g) {
     print(a);
   }
+  g = false;
 }
-float e = b * (c + 1);
+float e = b * (c + 1) / 2 ^(2 - 3);
 boolean f = b >= e;
+f = true and (false or b == c);

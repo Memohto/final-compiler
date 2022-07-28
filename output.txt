@@ -1,0 +1,40 @@
+intdcl da
+booldcl a
+a = true
+intdcl b
+b = 1
+floatdcl c
+c = 1.1
+booldcl d
+r1 = a and false
+d = r1
+r1 = 1 == 0
+if r1 goto L1
+goto L2
+L1
+booldcl g
+g = true
+if g goto L3
+goto L4
+L3
+print a
+L4
+g = false
+L2
+floatdcl e
+r1 = int2float b
+r2 = int2float 1
+r3 = c + r2
+r4 = 2 - 3
+r5 = 2 ^ r4
+r6 = int2float r5
+r7 = r3 / r6
+r8 = r1 * r7
+e = r8
+booldcl f
+r1 = b >= e
+f = r1
+r1 = b == c
+r2 = false or r1
+r3 = true and r2
+f = r3

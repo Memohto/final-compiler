@@ -20,10 +20,15 @@ class Node:
     elif self.type in ['+', '-', '*', '/', '^']:
       self.data_type = self.consistent(self.children[0], self.children[1])
     elif self.type in ['==', '!=', '>', '<', '>=', '<=']:
-      self.data_type = 'boolean'
+      self.data_type = self.comparison(self.children[0], self.children[1])
     elif self.type == '=':
       self.data_type = self.convert(self.children[1], self.children[0].data_type)
-  
+
+  def comparison(self, node_1, node_2):
+    if node_1.data_type == 'boolean' or node_2.data_type == 'boolean':
+      self.error("Parsing error: Can only compare numbers")
+    return 'boolean'
+
   def generalize(self, type_1, type_2):
     type = ""
     if type_1 == 'float'  or type_2 == 'float':
@@ -51,7 +56,7 @@ class Node:
     elif node.data_type == 'boolean' and type == 'int':
       self.error("Parsing error")
     elif node.data_type == 'boolean' and type == 'float':
-      self.error("Parsing error")
+      self.error("Parsing error: Cannot convert " + node.data_type + " to " + type)
     return type
   
   def error(self, message):
@@ -59,7 +64,7 @@ class Node:
     exit()
 
   def __str__(self, level = 0):
-    ret = "    "*level+(self.type +' : ' + str(self.val))+"\n"
+    ret = "   " * level+(self.type + ' : ' + str(self.val)) + ' ' + (self.data_type)+"\n"
     for child in self.children:
       ret += child.__str__(level+1)
     return ret

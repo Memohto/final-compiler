@@ -222,18 +222,25 @@ def p_error(p):
   exit()
 
 # Build the yacc
+from CodeGenerator import CodeGenerator 
 import ply.yacc as yacc
 parser = yacc.yacc()
 
 if len(sys.argv) == 2:
-  f = open(sys.argv[1], "r")
+  i = open(sys.argv[1], "r")
 
-  tree = yacc.parse(f.read())
-  print(names)
+  tree = yacc.parse(i.read())
   tree.type_check(names)
   print(tree)
 
+  i.close()
+  
+  generator = CodeGenerator(tree)
+  generator.generate_code()
 
-  f.close()
+  o = open("output.txt", "w")
+  for line in generator.instructions:
+    o.write(line+'\n')
+  o.close()
 else:
   print('Missing arguments (./gtc.py input_path.txt)')
