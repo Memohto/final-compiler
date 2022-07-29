@@ -34,3 +34,8 @@ if (booleano | condición) {
   // Código if
 }
 ```
+```
+while (booleano | condición) {
+  // Código while
+}
+```
